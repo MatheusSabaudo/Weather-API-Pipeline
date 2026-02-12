@@ -6,7 +6,7 @@ import psycopg2
 import os
 
 API_KEY = os.getenv("WEATHERSTACK_API_KEY", "INSERT_YOUR_API_KEY")
-CITIES = ["London", "Paris", "Rome"]
+CITIES = ["Turin"]
 
 def create_table():
     conn = psycopg2.connect(
