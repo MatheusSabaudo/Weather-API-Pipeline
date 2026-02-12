@@ -24,7 +24,7 @@ This project demonstrates:
 -   📊 Data Analysis Script
 
 ## 📦 Project Structure
-
+```
 Weather-API-Pipeline/
 │
 ├── dags/ # Airflow DAG definitions
@@ -32,7 +32,7 @@ Weather-API-Pipeline/
 ├── weather_data_analyzer.py # Data analysis utility
 ├── docker-compose.yaml # Docker stack (Airflow + Postgres)
 ├── README.md # Documentation
-
+```
 ## 📥 Getting Started
 
 ### Prerequisites
