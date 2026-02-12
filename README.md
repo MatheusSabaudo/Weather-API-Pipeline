@@ -25,10 +25,13 @@ This project demonstrates:
 
 ## 📦 Project Structure
 
-Weather-API-Pipeline/ │ ├── dags/ \# Airflow DAG definitions ├──
-postgres/ \# PostgreSQL init scripts ├── weather_data_analyzer.py \#
-Data analysis utility ├── docker-compose.yaml \# Docker stack (Airflow +
-Postgres) ├── README.md \# Documentation
+Weather-API-Pipeline/
+│
+├── dags/ # Airflow DAG definitions
+├── postgres/ # PostgreSQL init scripts
+├── weather_data_analyzer.py # Data analysis utility
+├── docker-compose.yaml # Docker stack (Airflow + Postgres)
+├── README.md # Documentation
 
 ## 📥 Getting Started
 
