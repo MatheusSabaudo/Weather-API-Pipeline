@@ -24,7 +24,7 @@ This project demonstrates:
 -   📊 Data Analysis Script
 
 ## 📦 Project Structure
-
+```
 Weather-API-Pipeline/
 │
 ├── dags/ # Airflow DAG definitions
@@ -32,7 +32,7 @@ Weather-API-Pipeline/
 ├── weather_data_analyzer.py # Data analysis utility
 ├── docker-compose.yaml # Docker stack (Airflow + Postgres)
 ├── README.md # Documentation
-
+```
 ## 📥 Getting Started
 
 ### Prerequisites
@@ -71,11 +71,11 @@ http://localhost:8080
 4.  Analyze → Python analysis layer
 
 ## 🗄️ Example Database Schema
-
+```
 CREATE TABLE weather_data ( id SERIAL PRIMARY KEY, location TEXT,
 timestamp TIMESTAMP, temperature FLOAT, humidity FLOAT, pressure FLOAT,
 wind_speed FLOAT, weather_description TEXT );
-
+```
 ## 📊 Data Analysis
 
 python weather_data_analyzer.py
