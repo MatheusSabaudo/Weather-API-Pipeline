@@ -1,88 +1,64 @@
-from airflow import DAG
-from airflow.operators.python import PythonOperator
-from datetime import datetime
-import requests
 import psycopg2
-import os
+from tabulate import tabulate
+from datetime import datetime
 
-API_KEY = os.getenv("WEATHERSTACK_API_KEY", "INSERT_YOUR_API_KEY")
-CITIES = ["Turin"]
-
-def create_table():
-    conn = psycopg2.connect(
-        dbname="airflow",  # Match your docker-compose
-        user="airflow",
-        password="airflow",
-        host="postgres"
-    )
-    cursor = conn.cursor()
-    cursor.execute("""
-        CREATE TABLE IF NOT EXISTS weather_data (
-            id SERIAL PRIMARY KEY,
-            city VARCHAR(100),
-            temperature FLOAT,
-            humidity INT,
-            wind_speed INT,
-            timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-        )
-    """)
-    conn.commit()
-    cursor.close()
-    conn.close()
-
-def fetch_weather():
-    results = []
-    for city in CITIES:
-        url = f"http://api.weatherstack.com/current?access_key={API_KEY}&query={city}"
-        response = requests.get(url).json()
-        
-        # Add error handling for API failures
-        if "error" in response:
-            print(f"API Error for {city}: {response['error']['info']}")
-            continue
-            
-        data = {
-            "city": city,
-            "temperature": response['current']['temperature'],
-            "humidity": response['current']['humidity'],
-            "wind_speed": response['current']['wind_speed']
+class WeatherDataAnalyzer:
+    def __init__(self):
+        self.connection_params = {
+            "dbname": "airflow",
+            "user": "airflow",
+            "password": "airflow",
+            "host": "localhost",
+            "port": "5432"
         }
-        results.append(data)
-    return results
-
-def insert_weather():
-    conn = psycopg2.connect(
-        dbname="airflow",  # Match your docker-compose
-        user="airflow",
-        password="airflow",
-        host="postgres"
-    )
-    cursor = conn.cursor()
-    weather_data = fetch_weather()
-    for data in weather_data:
+    
+    def connect(self):
+        return psycopg2.connect(**self.connection_params)
+    
+    def get_city_statistics(self):
+        """Get statistics for each city"""
+        conn = self.connect()
+        cursor = conn.cursor()
+        
+        # SOLO CAMBIA city -> location
         cursor.execute("""
-            INSERT INTO weather_data (city, temperature, humidity, wind_speed)
-            VALUES (%s, %s, %s, %s)
-        """, (data['city'], data['temperature'], data['humidity'], data['wind_speed']))
-    conn.commit()
-    cursor.close()
-    conn.close()
-
-with DAG(
-    'weather_etl',
-    start_date=datetime(2026, 2, 12),
-    schedule_interval='@hourly',
-    catchup=False
-) as dag:
-
-    create_table_task = PythonOperator(
-        task_id='create_table',
-        python_callable=create_table
-    )
+            SELECT 
+                location,
+                COUNT(*) as total_readings,
+                AVG(temperature)::numeric(10,2) as avg_temp,
+                MIN(temperature) as min_temp,
+                MAX(temperature) as max_temp,
+                AVG(humidity)::numeric(10,2) as avg_humidity,
+                AVG(wind_speed)::numeric(10,2) as avg_wind_speed,
+                MAX(timestamp) as latest_reading
+            FROM weather_data 
+            GROUP BY location
+            ORDER BY location
+        """)
+        
+        results = cursor.fetchall()
+        cursor.close()
+        conn.close()
+        return results
     
-    load_weather = PythonOperator(
-        task_id='load_weather',
-        python_callable=insert_weather
-    )
-    
-    create_table_task >> load_weather
+    def display_statistics(self):
+        """Display only city statistics table"""
+        stats = self.get_city_statistics()
+        
+        if stats:
+            headers = ['City', 'Readings', 'Avg Temp (°C)', 'Min Temp', 'Max Temp', 'Avg Humidity (%)', 'Avg Wind (km/h)', 'Latest Reading']
+            formatted_stats = []
+            for row in stats:
+                formatted_row = list(row)
+                if isinstance(formatted_row[7], datetime):
+                    formatted_row[7] = formatted_row[7].strftime('%Y-%m-%d %H:%M:%S')
+                formatted_stats.append(formatted_row)
+            
+            print("\n=== WEATHER STATISTICS BY CITY ===\n")
+            print(tabulate(formatted_stats, headers=headers, tablefmt='grid'))
+        else:
+            print("No statistics available")
+
+if __name__ == "__main__":
+    analyzer = WeatherDataAnalyzer()
+    analyzer.display_statistics()
