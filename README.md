@@ -71,11 +71,11 @@ http://localhost:8080
 4.  Analyze → Python analysis layer
 
 ## 🗄️ Example Database Schema
-
+```
 CREATE TABLE weather_data ( id SERIAL PRIMARY KEY, location TEXT,
 timestamp TIMESTAMP, temperature FLOAT, humidity FLOAT, pressure FLOAT,
 wind_speed FLOAT, weather_description TEXT );
-
+```
 ## 📊 Data Analysis
 
 python weather_data_analyzer.py
